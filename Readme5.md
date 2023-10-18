@@ -1,274 +1,275 @@
-# TAREA 4 DE ALGORITMOS
-# Lester López
+# PROYECTO 2 DE ALGORITMOS
+# Lester López | Eliezer López
 ## El siguiente programa muestra 4 ejercicios cada uno presentado en c++ y python.
 >Algoritmo en C++ | Ejercicio 1
  ```C++
- /*-Un estacionamiento cobra una cuota mínima de $2.00 por estacionarse hasta tres horas
--El estacionamiento cobra $0.50 adicionales por cada hora o fracción que se pase de tres horas
--El cargo máximo para cualquier periodo dado de 24 horas es de $10.00
--Ningún automóvil se estaciona durante más de 24 horas a la vez
-*/
-#include <iostream>
-#include <iomanip>
-#include <cmath>
-
+ #include <iostream>
+#include <fstream>
+#include <vector>
 using namespace std;
 
-double calcularCargos(double horas) {
-    double cargo = 0.0;
-    if (horas <= 3) {
-        cargo = 2.0;
-    } else if (horas <= 24) {
-        cargo = 2.0 + 0.5 * ceil(horas - 3);
-        if (cargo > 10.0) {
-            cargo = 10.0;
+// Estructura para almacenar la información del producto
+struct Producto {
+    string nombre;
+    string codigo;
+    double precio;
+    string proveedor;
+    int existencia;
+    char estado;
+    double descuento;
+};
+
+// Función para guardar los datos en un archivo
+void guardarDatos(const vector<Producto>& productos) {
+    ofstream archivo("productos.txt");
+    if (archivo.is_open()) {
+        for (const Producto& producto : productos) {
+            archivo << producto.nombre << " " << producto.codigo << " " << producto.precio << " " << producto.proveedor << " "
+                    << producto.existencia << " " << producto.estado << " " << producto.descuento << "\n";
         }
+        archivo.close();
     } else {
-        cout << "Error: El tiempo de estacionamiento no puede ser mayor a 24 horas." << endl;
+        cout << "No se pudo abrir el archivo para escritura." << endl;
     }
-    return cargo;
+}
+
+// Función para cargar los datos desde un archivo
+vector<Producto> cargarDatos() {
+    vector<Producto> productos;
+    ifstream archivo("productos.txt");
+    if (archivo.is_open()) {
+        Producto producto;
+        while (archivo >> producto.nombre >> producto.codigo >> producto.precio >> producto.proveedor >> producto.existencia >> producto.estado >> producto.descuento) {
+            productos.push_back(producto);
+        }
+        archivo.close();
+    } else {
+        cout << "El archivo de datos no existe o no se puede abrir." << endl;
+    }
+    return productos;
+}
+
+// Función para agregar un producto
+void agregarProducto(vector<Producto>& productos) {
+    Producto producto;
+    cout << "Nombre: ";
+    cin >> producto.nombre;
+    cout << "Codigo: ";
+    cin >> producto.codigo;
+
+    // Verificar que el código no se repita
+    for (const Producto& p : productos) {
+        if (p.codigo == producto.codigo) {
+            cout << "El codigo de producto ya existe. No se puede agregar." << endl;
+            return;
+        }
+    }
+
+    cout << "Precio: ";
+    cin >> producto.precio;
+    cout << "Proveedor: ";
+    cin >> producto.proveedor;
+    cout << "Existencia: ";
+    cin >> producto.existencia;
+    cout << "Estado (A = Aprobado, R = Reprobado): ";
+    cin >> producto.estado;
+    cout << "Descuento: ";
+    cin >> producto.descuento;
+
+    productos.push_back(producto);
+    guardarDatos(productos);
+    cout << "Producto agregado con exito." << endl;
+}
+
+// Función para buscar un producto por código o nombre
+void buscarProducto(const vector<Producto>& productos) {
+    string criterio;
+    cout << "Ingrese el criterio de busqueda (codigo o nombre): ";
+    cin >> criterio;
+    for (const Producto& producto : productos) {
+        if (producto.codigo == criterio || producto.nombre.find(criterio) != string::npos) {
+            cout << "Nombre: " << producto.nombre << endl;
+            cout << "Código: " << producto.codigo << endl;
+            cout << "Precio: " << producto.precio << endl;
+            cout << "Proveedor: " << producto.proveedor << endl;
+            cout << "Existencia: " << producto.existencia << endl;
+            cout << "Estado: " << producto.estado << endl;
+            cout << "Descuento: " << producto.descuento << endl;
+            cout << "---------------------------" << endl;
+        }
+    }
+}
+
+// Función para modificar los datos de un producto
+void modificarProducto(vector<Producto>& productos) {
+    string codigo;
+    cout << "Ingrese el codigo del producto que desea modificar: ";
+    cin >> codigo;
+    for (Producto& producto : productos) {
+        if (producto.codigo == codigo) {
+            cout << "Nuevo precio: ";
+            cin >> producto.precio;
+            cout << "Nuevo proveedor: ";
+            cin >> producto.proveedor;
+            cout << "Nueva existencia: ";
+            cin >> producto.existencia;
+            cout << "Nuevo estado (A = Aprobado, R = Reprobado): ";
+            cin >> producto.estado;
+            cout << "Nuevo descuento: ";
+            cin >> producto.descuento;
+            guardarDatos(productos);
+            cout << "Producto modificado con exito." << endl;
+            return;
+        }
+    }
+
+    cout << "No se encontro ningun producto con el codigo proporcionado." << endl;
 }
 
 int main() {
-    double horas[3];
-    double cargos[3];
-    double total = 0.0;
-    double total2 = 0.0;
+    vector<Producto> productos = cargarDatos();
 
-    for (int i = 0; i < 3; i++) {
-        cout << "Introduzca las horas de estacionamiento para el cliente " << i + 1 << ": ";
-        cin >> horas[i];
-        cargos[i] = calcularCargos(horas[i]);
-        total += cargos[i];
-        total2 += horas[i];
+    while (true) {
+        cout << "Menu:" << endl;
+        cout << "1. Agregar producto" << endl;
+        cout << "2. Buscar producto" << endl;
+        cout << "3. Modificar datos de un producto" << endl;
+        cout << "4. Salir" << endl;
+        cout << "Seleccione una opcion: ";
+
+        int opcion;
+        cin >> opcion;
+
+        switch (opcion) {
+            case 1:
+                agregarProducto(productos);
+                break;
+            case 2:
+                buscarProducto(productos);
+                break;
+            case 3:
+                modificarProducto(productos);
+                break;
+            case 4:
+		    cout<<"Gracias por utilizar el programa"<<endl;
+                return 0;
+            default:
+                cout << "Opcion no valida." << endl;
+        }
     }
-
-    cout << fixed << setprecision(2);
-    cout << "Cliente" << setw(20) << "Horas" << setw(20) << "Cargo" << endl;
-    for (int i = 0; i < 3; i++) {
-        cout << i + 1 << setw(20) << horas[i] << setw(20) << cargos[i] << endl;
-    }
-    cout << "Total" << setw(20) << total2 << setw(20) << total << endl;
-
     return 0;
 }
+
   ```
 ---
 ---
 >Algoritmo en Python | Ejercicio 1
  ```Python
-def calcularCargos(horas):
-    if horas <= 3:
-        return 2.00
-    elif horas <= 24:
-        return 2.00 + 0.50 * (horas - 3)
-    else:
-        return 10.00
+# Función para guardar los datos en un archivo
+def guardarDatos(productos):
+    with open("productos.txt", "w") as archivo:
+        for producto in productos:
+            archivo.write(f"{producto['nombre']} {producto['codigo']} {producto['precio']} {producto['proveedor']} {producto['existencia']} {producto['estado']} {producto['descuento']}\n")
 
-total = 0
-print("Cliente\tHoras\tCargo")
-for i in range(3):
-    horas = float(input(f"Ingrese las horas de estacionamiento del cliente {i + 1}: "))
-    cargo = calcularCargos(horas)
-    total += cargo
-    print(f"{i + 1}\t{horas}\t${cargo:.2f}")
-print(f"Total\t\t${total:.2f}")
- ```
----
----
->Algoritmo en C++ | Ejercicio 2
- ```C++
-/*Aplicación que le pregunte al usuario cuántas filas y cuántas columnas de una matriz 
-quiere ingresar, luego que reciba todos los valores, seguido debe imprimir el número mayor de
-la matriz y los datos de la matriz ingresada y el promedio de la matriz
-*/
-#include <iostream>
-#include <iomanip>
-
-using namespace std;
-
-int main() {
-    int filas, columnas;
-    double matriz[100][100];
-    double mayor = 0.0;
-    double suma = 0.0;
-    double promedio = 0.0;
-
-    cout << "Ingrese el numero de filas: ";
-    cin >> filas;
-    cout << "Ingrese el numero de columnas: ";
-    cin >> columnas;
-
-    for (int i = 0; i < filas; i++) {
-        for (int j = 0; j < columnas; j++) {
-            cout << "Ingrese el valor para la fila " << i + 1 << " y la columna " << j + 1 << ": ";
-            cin >> matriz[i][j];
-            if (matriz[i][j] > mayor) {
-                mayor = matriz[i][j];
-            }
-            suma += matriz[i][j];
-        }
-    }
-
-    promedio = suma / (filas * columnas);
-
-    cout << fixed << setprecision(2);
-    cout << "El numero mayor de la matriz es: " << mayor << endl;
-    cout << "Los datos de la matriz son:" << endl;
-    for (int i = 0; i < filas; i++) {
-        for (int j = 0; j < columnas; j++) {
-            cout << setw(10) << matriz[i][j] << " ";
-        }
-        cout << endl;
-    }
-    cout << "El promedio de la matriz es: " << promedio << endl;
-
-    return 0;
-}
- ```
----
----
->Algoritmo en Python | Ejercicio 2
- ```Python
-filas = int(input("Ingrese la cantidad de filas: "))
-columnas = int(input("Ingrese la cantidad de columnas: "))
-matriz = []
-for i in range(filas):
-    fila = []
-    for j in range(columnas):
-        fila.append(int(input(f"Ingrese el valor para la fila {i + 1}, columna {j + 1}: ")))
-    matriz.append(fila)
-mayor = matriz[0][0]
-for fila in matriz:
-    for valor in fila:
-        if valor > mayor:
-            mayor = valor
-print("El número mayor de la matriz es:", mayor)
-print("Los datos de la matriz son:")
-for fila in matriz:
-    for valor in fila:
-        print(valor, end=" ")
-    print()
-promedio = sum(sum(matriz, [])) / (filas * columnas)
-print("El promedio de la matriz es:", promedio)
-
- ```
----
----
->Algoritmo en C++ | Ejercicio 3
- ```C++
-/*Escriba una función llamada esPerfecto que determine si el parámetro numero es un número perfecto
-Use esta función en un programa que determine e imprima todos los números perfectos entre 1 y 1000
-Imprima los divi-sores de cada número perfecto para confirmar que el número sea realmente perfecto
-*/
-#include <iostream>
-using namespace std;
-
-bool esPerfecto(int numero) {
-    int suma = 0;
-    for (int i = 1; i < numero; i++) {
-        if (numero % i == 0) {
-            suma += i;
-        }
-    }
-    return suma == numero;
-}
-
-int main() {
-    cout << "Numeros perfectos entre 1 y 1000:" << endl;
-    for (int i = 1; i <= 1000; i++) {
-        if (esPerfecto(i)) {
-            cout << i << " es un numero perfecto." << endl;
-            cout << "Sus divisores son: ";
-            for (int j = 1; j < i; j++) {
-                if (i % j == 0) {
-                    cout << j << " ";
+# Función para cargar los datos desde un archivo
+def cargarDatos():
+    try:
+        with open("productos.txt", "r") as archivo:
+            productos = []
+            for linea in archivo:
+                datos = linea.strip().split()
+                producto = {
+                    'nombre': datos[0],
+                    'codigo': datos[1],
+                    'precio': float(datos[2]),
+                    'proveedor': datos[3],
+                    'existencia': int(datos[4]),
+                    'estado': datos[5],
+                    'descuento': float(datos[6])
                 }
-            }
-            cout << endl;
-        }
-    }
-    return 0;
-}
+                productos.append(producto)
+            return productos
+    except FileNotFoundError:
+        print("El archivo de datos no existe o no se puede abrir.")
+        return []
 
- ```
----
----
->Algoritmo en Python | Ejercicio 3
- ```Python
-def esPerfecto(numero):
-    suma = 0
-    for i in range(1, numero):
-        if numero % i == 0:
-            suma += i
-    return suma == numero
+# Función para agregar un producto
+def agregarProducto(productos):
+    producto = {}
+    producto['nombre'] = input("Nombre: ")
+    producto['codigo'] = input("Código: ")
 
-print("Números perfectos entre 1 y 1000:")
-for i in range(1, 1001):
-    if esPerfecto(i):
-        print(f"{i} es un número perfecto.")
-        print("Sus divisores son: ", end="")
-        for j in range(1, i):
-            if i % j == 0:
-                print(j, end=" ")
-        print()
+    # Verificar que el código no se repita
+    for p in productos:
+        if p['codigo'] == producto['codigo']:
+            print("El código de producto ya existe. No se puede agregar.")
+            return
 
- ```
----
----
->Algoritmo en C++ | Ejercicio 4
- ```C++
-/*Aplicación que determine la mediana y el promedio de una lista (arreglo) de
-números, donde el usuario indique la cantidad de dichos números. Es decir el debe decir cuánto
-será la longitud del arreglo e ingresará cada número
-*/
-#include <iostream>
-#include <algorithm>
-using namespace std;
+    producto['precio'] = float(input("Precio: "))
+    producto['proveedor'] = input("Proveedor: ")
+    producto['existencia'] = int(input("Existencia: "))
+    producto['estado'] = input("Estado (A = Aprobado, R = Reprobado): ")
+    producto['descuento'] = float(input("Descuento: "))
 
-int main() {
-    int n;
-    cout << "Ingrese la cantidad de numeros: ";
-    cin >> n;
-    int arr[n];
-    for (int i = 0; i < n; i++) {
-        cout << "Ingrese el numero " << i + 1 << ": ";
-        cin >> arr[i];
-    }
-    sort(arr, arr + n);
-    double promedio = 0;
-    for (int i = 0; i < n; i++) {
-        promedio += arr[i];
-    }
-    promedio /= n;
-    double mediana;
-    if (n % 2 == 0) {
-        mediana = (arr[n / 2 - 1] + arr[n / 2]) / 2.0;
-    } else {
-        mediana = arr[n / 2];
-    }
-    cout << "El promedio es: " << promedio << endl;
-    cout << "La mediana es: " << mediana << endl;
-    return 0;
-}
- ```
----
----
->Algoritmo en Python | Ejercicio 4
- ```Python
-n = int(input("Ingrese la cantidad de números: "))
-arr = []
-for i in range(n):
-    arr.append(int(input(f"Ingrese el número {i + 1}: ")))
-arr.sort()
-promedio = sum(arr) / n
-if n % 2 == 0:
-    mediana = (arr[n // 2 - 1] + arr[n // 2]) / 2
-else:
-    mediana = arr[n // 2]
-print(f"El promedio es: {promedio}")
-print(f"La mediana es: {mediana}")
+    productos.append(producto)
+    guardarDatos(productos)
+    print("Producto agregado con éxito.")
 
+# Función para buscar un producto por código o nombre
+def buscarProducto(productos):
+    criterio = input("Ingrese el criterio de búsqueda (código o nombre): ")
+    for producto in productos:
+        if producto['codigo'] == criterio or criterio in producto['nombre']:
+            print("Nombre:", producto['nombre'])
+            print("Código:", producto['codigo'])
+            print("Precio:", producto['precio'])
+            print("Proveedor:", producto['proveedor'])
+            print("Existencia:", producto['existencia'])
+            print("Estado:", producto['estado'])
+            print("Descuento:", producto['descuento'])
+            print("---------------------------")
+
+# Función para modificar los datos de un producto
+def modificarProducto(productos):
+    codigo = input("Ingrese el código del producto que desea modificar: ")
+    for producto in productos:
+        if producto['codigo'] == codigo:
+            producto['precio'] = float(input("Nuevo precio: "))
+            producto['proveedor'] = input("Nuevo proveedor: ")
+            producto['existencia'] = int(input("Nueva existencia: "))
+            producto['estado'] = input("Nuevo estado (A = Aprobado, R = Reprobado): ")
+            producto['descuento'] = float(input("Nuevo descuento: "))
+            guardarDatos(productos)
+            print("Producto modificado con éxito.")
+            return
+
+    print("No se encontró ningún producto con el código proporcionado.")
+
+# Función principal
+def main():
+    productos = cargarDatos()
+
+    while True:
+        print("Menú:")
+        print("1. Agregar producto")
+        print("2. Buscar producto")
+        print("3. Modificar datos de un producto")
+        print("4. Salir")
+        opcion = input("Seleccione una opción: ")
+
+        if opcion == "1":
+            agregarProducto(productos)
+        elif opcion == "2":
+            buscarProducto(productos)
+        elif opcion == "3":
+            modificarProducto(productos)
+        elif opcion == "4":
+            return
+        else:
+            print("Opción no válida.")
+
+if __name__ == "__main__":
+    main()
  ```
 ---
 ---
